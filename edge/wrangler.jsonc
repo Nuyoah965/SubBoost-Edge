@@ -1,0 +1,26 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "test",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-02-07",
+  "assets": {
+    "directory": "./out",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "single-page-application"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "SUB_KV",
+      "id": "58db6bee88a44a19a9457a465d6eb693"
+    }
+  ],
+  "triggers": {
+    "crons": ["*/15 * * * *", "17 3 * * *"]
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}

@@ -8,6 +8,7 @@ import {
   normalizeRuleSearchType,
   parseCnRuleCandidateQuery,
   RuleIndexUnavailableError,
+  type RemoteRuleIndex,
 } from "./index";
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -179,6 +180,54 @@ describe("rule catalog service", () => {
     expect(service.getCachedRuleIndex()?.source).toBe("stale");
   });
 
+  it("persists the remote index and hydrates it across service instances", async () => {
+    let now = 1_000;
+    let persisted: RemoteRuleIndex | null = null;
+    const indexCache = {
+      read: vi.fn(async () => persisted),
+      write: vi.fn(async (index: RemoteRuleIndex) => {
+        persisted = index;
+      }),
+    };
+    const firstFetch = createTreeFetch(["geosite/google.mrs", "geoip/cn.mrs"]);
+    const firstService = createRuleCatalogService({
+      fetchImpl: firstFetch,
+      now: () => now,
+      cacheTtlMs: 10_000,
+      indexCache,
+    });
+
+    await expect(firstService.getRemoteRuleIndex()).resolves.toMatchObject({ geosite: ["google"] });
+    expect(firstFetch).toHaveBeenCalledTimes(2);
+    expect(indexCache.write).toHaveBeenCalledTimes(1);
+
+    const failingFetch = vi.fn(async () => textResponse("nope", 500)) as unknown as typeof fetch;
+    const secondService = createRuleCatalogService({
+      fetchImpl: failingFetch,
+      now: () => now,
+      cacheTtlMs: 10_000,
+      indexCache,
+    });
+
+    await expect(secondService.getRemoteRuleIndex()).resolves.toMatchObject({
+      source: "remote",
+      geosite: ["google"],
+    });
+    expect(failingFetch).not.toHaveBeenCalled();
+
+    now = 20_000;
+    await expect(secondService.getRemoteRuleIndex()).resolves.toMatchObject({
+      source: "stale",
+      geosite: ["google"],
+    });
+    const failedRequestCount = vi.mocked(failingFetch).mock.calls.length;
+    expect(failedRequestCount).toBeGreaterThan(0);
+
+    await expect(secondService.getRemoteRuleIndex()).resolves.toMatchObject({ source: "stale" });
+    expect(failingFetch).toHaveBeenCalledTimes(failedRequestCount);
+    expect(persisted).toMatchObject({ source: "stale" });
+  });
+
   it("skips refresh while the index is fresh and exposes cached source state", async () => {
     let now = 1_000;
     const fetchImpl = createTreeFetch(["geosite/google.mrs", "geoip/cn.mrs"]);
@@ -217,6 +266,33 @@ describe("rule catalog service", () => {
 
     expect(index.geosite).toEqual(["fallback"]);
     expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+
+  it("falls back to GitHub directory pages when the REST API is rate limited", async () => {
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.startsWith("https://api.github.com/")) return textResponse("rate limited", 403);
+      if (url.endsWith("/tree/meta/geo/geosite")) {
+        return textResponse(
+          '<a href="/MetaCubeX/meta-rules-dat/blob/meta/geo/geosite/google.mrs">google</a>' +
+            '<a href="/MetaCubeX/meta-rules-dat/blob/meta/geo/geosite/netflix.mrs">netflix</a>'
+        );
+      }
+      if (url.endsWith("/tree/meta/geo/geoip")) {
+        return textResponse('<a href="/MetaCubeX/meta-rules-dat/blob/meta/geo/geoip/cn.mrs">cn</a>');
+      }
+      return textResponse("missing", 404);
+    }) as unknown as typeof fetch;
+    const service = createRuleCatalogService({ fetchImpl });
+
+    const index = await service.getRemoteRuleIndex();
+
+    expect(index).toMatchObject({
+      source: "remote",
+      geosite: ["google", "netflix"],
+      geoip: ["cn"],
+    });
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
   });
 
   it("reports unavailable refresh when GitHub returns a truncated tree", async () => {

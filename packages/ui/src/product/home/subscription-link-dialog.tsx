@@ -31,6 +31,8 @@ type Props = {
   autoUpdateHours: number;
   setAutoUpdateHours: (value: number) => void;
   autoUpdatePolicy: AutoUpdateIntervalPolicy;
+  autoUpdateAvailable?: boolean;
+  linkStorageMode?: "account" | "rolling-kv" | "persistent-kv";
   smartNodeMatchingEnabled: boolean;
   setSmartNodeMatchingEnabled: (value: boolean) => void;
   isCreatingSubscription: boolean;
@@ -51,6 +53,8 @@ export function SubscriptionLinkDialog({
   autoUpdateHours,
   setAutoUpdateHours,
   autoUpdatePolicy,
+  autoUpdateAvailable = true,
+  linkStorageMode = "account",
   smartNodeMatchingEnabled,
   setSmartNodeMatchingEnabled,
   isCreatingSubscription,
@@ -77,7 +81,11 @@ export function SubscriptionLinkDialog({
               ? "复制下方链接到 Clash 客户端导入使用"
               : isEditingExistingSubscription
                 ? "将覆盖该订阅的配置与订阅源，链接保持不变"
-                : "生成持久化的订阅链接，支持在 Clash 客户端中自动更新"}
+                : linkStorageMode === "rolling-kv"
+                  ? "生成由边缘 KV 托管的 Clash 订阅链接"
+                  : linkStorageMode === "persistent-kv"
+                    ? "生成由边缘 KV 持久保存并定时刷新的 Clash 订阅链接"
+                    : "生成持久化的订阅链接，支持在 Clash 客户端中自动更新"}
           </DialogDescription>
         </DialogHeader>
 
@@ -93,7 +101,7 @@ export function SubscriptionLinkDialog({
               />
             </div>
 
-            <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+            {autoUpdateAvailable && <div className="rounded-lg border border-white/10 bg-white/5 p-3">
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
@@ -127,23 +135,38 @@ export function SubscriptionLinkDialog({
                   <p className="text-xs text-white/45">最小 {minAutoUpdateLabel}，按创建时间计时</p>
                 </div>
               )}
-            </div>
+            </div>}
 
             <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-sm text-amber-200">
               <p className="font-medium mb-1">注意事项</p>
-              <ul className="text-xs text-amber-200/70 space-y-1">
-                <li>🔒 配置数据将加密存储于服务器</li>
-                <li>🔑 订阅链接相当于访问凭证，请勿公开分享</li>
-                <li>⏱️ 客户端高频拉取订阅会被封禁，请合理配置</li>
-                {isEditingExistingSubscription ? (
-                  <>
-                    <li>⚠️ 更新将覆盖原订阅配置与订阅源</li>
-                    <li>✅ 订阅链接保持不变（无需在客户端重新导入）</li>
-                  </>
-                ) : (
-                  <li>🗑️ 您可以随时在仪表盘删除订阅</li>
-                )}
-              </ul>
+              {linkStorageMode === "rolling-kv" ? (
+                <ul className="text-xs text-amber-200/70 space-y-1">
+                  <li>链接会在最后一次访问 7 天后过期</li>
+                  <li>订阅链接相当于访问凭证，请勿公开分享</li>
+                  <li>需要撤销时可重新生成链接并停用旧链接</li>
+                </ul>
+              ) : linkStorageMode === "persistent-kv" ? (
+                <ul className="text-xs text-amber-200/70 space-y-1">
+                  <li>订阅源、节点凭据和最近成功配置会持久保存在 Cloudflare KV</li>
+                  <li>自动更新按所选间隔执行，调度精度约 15 分钟</li>
+                  <li>更新失败时继续提供上一次成功配置</li>
+                  <li>订阅链接相当于访问凭证，请勿公开分享</li>
+                </ul>
+              ) : (
+                <ul className="text-xs text-amber-200/70 space-y-1">
+                  <li>🔒 配置数据将加密存储于服务器</li>
+                  <li>🔑 订阅链接相当于访问凭证，请勿公开分享</li>
+                  <li>⏱️ 客户端高频拉取订阅会被封禁，请合理配置</li>
+                  {isEditingExistingSubscription ? (
+                    <>
+                      <li>⚠️ 更新将覆盖原订阅配置与订阅源</li>
+                      <li>✅ 订阅链接保持不变（无需在客户端重新导入）</li>
+                    </>
+                  ) : (
+                    <li>🗑️ 您可以随时在仪表盘删除订阅</li>
+                  )}
+                </ul>
+              )}
             </div>
           </div>
         ) : (

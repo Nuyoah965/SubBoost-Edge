@@ -46,6 +46,8 @@ type SubscriptionLinkState = {
   autoUpdateHours: number;
   setAutoUpdateHours: (value: number) => void;
   autoUpdatePolicy: AutoUpdateIntervalPolicy;
+  autoUpdateAvailable: boolean;
+  linkStorageMode: "account" | "rolling-kv" | "persistent-kv";
   smartNodeMatchingEnabled: boolean;
   setSmartNodeMatchingEnabled: (value: boolean) => void;
   isCreatingSubscription: boolean;
@@ -378,6 +380,8 @@ export function HomeLayout({
         autoUpdateHours={subscription.autoUpdateHours}
         setAutoUpdateHours={subscription.setAutoUpdateHours}
         autoUpdatePolicy={subscription.autoUpdatePolicy}
+        autoUpdateAvailable={subscription.autoUpdateAvailable}
+        linkStorageMode={subscription.linkStorageMode}
         smartNodeMatchingEnabled={subscription.smartNodeMatchingEnabled}
         setSmartNodeMatchingEnabled={subscription.setSmartNodeMatchingEnabled}
         isCreatingSubscription={subscription.isCreatingSubscription}

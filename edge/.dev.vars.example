@@ -1,0 +1,2 @@
+EDGE_ADMIN_PASSWORD=change-me
+EDGE_SESSION_SECRET=replace-with-a-long-random-value

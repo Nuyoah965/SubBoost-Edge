@@ -53,6 +53,9 @@ export type HomeSubscriptionSaveInput = {
 export type HomeSubscriptionAdapter = {
   loginHref?: string;
   autoUpdateIntervalPolicy?: AutoUpdateIntervalPolicyOverride;
+  defaultAutoUpdateEnabled?: boolean;
+  autoUpdateAvailable?: boolean;
+  linkStorageMode?: "account" | "rolling-kv" | "persistent-kv";
   acceptSaveRequirement?: () => Promise<Response>;
   saveSubscription?: (input: HomeSubscriptionSaveInput) => Promise<Response>;
 };
@@ -143,6 +146,8 @@ export function useSubscriptionLink({
   const [saveRequirementDialog, setSaveRequirementDialog] = React.useState(false);
   const [subscriptionFlowMode, setSubscriptionFlowMode] = React.useState<ProductMode>("quick");
   const interactions = useProductInteractionAdapter();
+  const autoUpdateAvailable = subscriptionAdapter?.autoUpdateAvailable !== false;
+  const linkStorageMode = subscriptionAdapter?.linkStorageMode ?? "account";
 
   const isEditingExistingSubscription = Boolean(editingSubscription);
   const loginHref = subscriptionAdapter?.loginHref ?? "/login";
@@ -176,10 +181,11 @@ export function useSubscriptionLink({
   const initializeSubscriptionDialog = React.useCallback(() => {
     const currentAutoUpdateInterval = editingSubscription?.autoUpdateInterval;
     const nextAutoUpdateEnabled =
-      isEditingExistingSubscription &&
-      typeof currentAutoUpdateInterval === "number" &&
-      Number.isFinite(currentAutoUpdateInterval) &&
-      currentAutoUpdateInterval > 0;
+      (isEditingExistingSubscription &&
+        typeof currentAutoUpdateInterval === "number" &&
+        Number.isFinite(currentAutoUpdateInterval) &&
+        currentAutoUpdateInterval > 0) ||
+      (!isEditingExistingSubscription && subscriptionAdapter?.defaultAutoUpdateEnabled === true);
     const nextAutoUpdateHours =
       nextAutoUpdateEnabled && typeof currentAutoUpdateInterval === "number"
       ? Math.max(autoUpdatePolicy.minHours, autoUpdateIntervalSecondsToHours(currentAutoUpdateInterval))
@@ -195,7 +201,13 @@ export function useSubscriptionLink({
     setSmartNodeMatchingEnabled(editingSubscription?.smartNodeMatchingEnabled !== false);
     setSubscriptionUrl("");
     setSubscriptionDialog(true);
-  }, [autoUpdatePolicy.defaultHours, autoUpdatePolicy.minHours, editingSubscription, isEditingExistingSubscription]);
+  }, [
+    autoUpdatePolicy.defaultHours,
+    autoUpdatePolicy.minHours,
+    editingSubscription,
+    isEditingExistingSubscription,
+    subscriptionAdapter?.defaultAutoUpdateEnabled,
+  ]);
 
   // 打开订阅链接对话框
   const handleGenerateSubscription = React.useCallback((mode: ProductMode) => {
@@ -310,7 +322,7 @@ export function useSubscriptionLink({
       const payload = {
           name: subscriptionName,
           templateId: appliedTemplateId,
-          autoUpdateInterval: nextAutoUpdateInterval,
+          autoUpdateInterval: autoUpdateAvailable ? nextAutoUpdateInterval : null,
           urls: storeSources
             .filter((s) => s.type === "url")
             .map((s) => s.content)
@@ -457,6 +469,7 @@ export function useSubscriptionLink({
     autoUpdatePolicy,
     autoUpdateEnabled,
     autoUpdateHours,
+    autoUpdateAvailable,
     clearUser,
     cnIpNoResolve,
     experimentalCnUseCnRuleSet,
@@ -521,6 +534,8 @@ export function useSubscriptionLink({
     autoUpdateHours,
     setAutoUpdateHours,
     autoUpdatePolicy: autoUpdatePolicy as AutoUpdateIntervalPolicy,
+    autoUpdateAvailable,
+    linkStorageMode,
     smartNodeMatchingEnabled,
     setSmartNodeMatchingEnabled,
     isCreatingSubscription,

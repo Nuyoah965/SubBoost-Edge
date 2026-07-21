@@ -2,6 +2,11 @@ node_modules/
 **/node_modules/
 .next/
 local/.next/
+edge/.next/
+edge/out/
+edge/.wrangler/
+edge/public/subboost-edge-source.tar.gz
+edge/.dev.vars
 out/
 dist/
 coverage/
@@ -11,6 +16,7 @@ local/src/generated/
 .env
 .env.*
 !.env.example
+!edge/.dev.vars.example
 *.pem
 data/
 .tmp/

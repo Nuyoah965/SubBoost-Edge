@@ -11,7 +11,7 @@ export default defineConfig([
     },
     settings: {
       next: {
-        rootDir: ["local/"],
+        rootDir: ["local/", "edge/"],
       },
     },
     rules: {
@@ -33,6 +33,9 @@ export default defineConfig([
   globalIgnores([
     ".next/**",
     "dist/**",
+    "edge/.next/**",
+    "edge/out/**",
+    "edge/next-env.d.ts",
     "local/.next/**",
     "local/next-env.d.ts",
     "local/src/generated/**",

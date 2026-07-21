@@ -1,0 +1,64 @@
+"use client";
+
+import { HomeSurface, type HomeSurfaceAdapter } from "@subboost/ui/product/home/home-surface";
+import { createRulesProductApi } from "@subboost/ui/product/api-adapter";
+import { readSourceImportResponse } from "@subboost/ui/product/client-response";
+import { useConfigStore } from "@subboost/ui/store/config-store";
+
+const edgeHomeAdapter: HomeSurfaceAdapter = {
+  loginHref: "/login",
+  loadSubscription: (id) => fetch(`/api/subscriptions/${encodeURIComponent(id)}`, { cache: "no-store" }),
+  templateUploadHref: null,
+  productApi: {
+    sourceImport: {
+      importSource: async (request) => {
+        const data = await readSourceImportResponse(
+          await fetch("/api/source-import", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(request),
+          })
+        );
+        return {
+          content: typeof data.content === "string" ? data.content : "",
+          headers: data.headers || {},
+          parseResult: data.parseResult,
+        };
+      },
+    },
+    templates: {
+      catalogEnabled: false,
+      builtinEngagementEnabled: false,
+    },
+    rules: createRulesProductApi(),
+  },
+  subscription: {
+    loginHref: "/login",
+    autoUpdateIntervalPolicy: {
+      defaultHours: 24,
+      minHours: 1,
+      stepHours: 1,
+      requireIntegerHours: true,
+    },
+    defaultAutoUpdateEnabled: true,
+    linkStorageMode: "persistent-kv",
+    saveSubscription: async ({ payload, isEditing, subscriptionId }) => {
+      const generatedYaml = useConfigStore.getState().generatedYaml;
+      const target = isEditing && subscriptionId
+        ? `/api/subscriptions/${encodeURIComponent(subscriptionId)}`
+        : "/api/subscriptions";
+      return fetch(target, {
+        method: isEditing && subscriptionId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...payload,
+          yaml: generatedYaml,
+        }),
+      });
+    },
+  },
+};
+
+export default function Page() {
+  return <HomeSurface adapter={edgeHomeAdapter} />;
+}

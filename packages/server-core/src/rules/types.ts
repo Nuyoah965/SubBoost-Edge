@@ -107,6 +107,10 @@ export type RuleCatalogServiceOptions = {
   cacheTtlMs?: number;
   userAgent?: string;
   getGitHubToken?: () => string | undefined;
+  indexCache?: {
+    read: () => Promise<RemoteRuleIndex | null>;
+    write: (index: RemoteRuleIndex) => Promise<void>;
+  };
   logger?: Pick<Console, "warn" | "error" | "info">;
 };
 

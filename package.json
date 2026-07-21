@@ -8,14 +8,19 @@
   },
   "workspaces": [
     "packages/*",
-    "local"
+    "local",
+    "edge"
   ],
   "scripts": {
     "dev": "npm --workspace @subboost/local run dev",
     "build": "npm --workspace @subboost/local run build",
+    "edge:dev": "npm --workspace @subboost/edge run dev",
+    "edge:build": "npm --workspace @subboost/edge run build",
+    "edge:typecheck": "npm --workspace @subboost/edge run typecheck",
+    "edge:deploy": "npm --workspace @subboost/edge run deploy",
     "test:unit": "vitest run",
     "test:core": "vitest run --config vitest.core.config.ts",
-    "lint": "eslint local packages --max-warnings=0",
+    "lint": "eslint local packages edge --max-warnings=0",
     "check:local-app": "npm --prefix local run check",
     "local:db:generate": "npm --prefix local run db:generate",
     "local:lint": "npm --prefix local run lint",
@@ -69,7 +74,8 @@
     "prisma": "^7.8.0",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.7",
+    "wrangler": "^4.112.0"
   },
   "overrides": {
     "@hono/node-server": "1.19.13",

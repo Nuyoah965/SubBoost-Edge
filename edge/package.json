@@ -1,0 +1,39 @@
+{
+  "name": "@subboost/edge",
+  "version": "2.6.0-edge.2",
+  "license": "AGPL-3.0-only",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0 <23 || >=24.0.0"
+  },
+  "scripts": {
+    "clean": "node ../local/scripts/clean-next.cjs",
+    "dev": "next dev --turbopack -H 127.0.0.1 -p 3002",
+    "prebuild": "npm run clean",
+    "build": "node scripts/build-source-archive.mjs && next build --webpack",
+    "lint": "eslint app src worker --max-warnings=0",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "deploy": "npm run build && wrangler deploy --config wrangler.jsonc"
+  },
+  "dependencies": {
+    "@subboost/core": "file:../packages/core",
+    "@subboost/server-core": "file:../packages/server-core",
+    "@subboost/ui": "file:../packages/ui",
+    "lucide-react": "^1.17.0",
+    "next": "^16.2.7",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-remove-scroll-bar": "^2.3.8",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.0",
+    "@types/node": "^22.19.19",
+    "@types/react": "^19.2.16",
+    "@types/react-dom": "^19.2.3",
+    "postcss": "8.5.15",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^6.0.3"
+  }
+}

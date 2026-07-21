@@ -38,6 +38,11 @@ export * from "./types";
 const DEFAULT_USER_AGENT = "SubBoost";
 const REMOTE_ONLY_SAMPLE_SIZE = 50;
 const GEOSITE_PATH_PREFIX = "geosite/";
+const MAX_STALE_RETRY_TTL_MS = 60 * 60 * 1000;
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
 
 function getNow(options: RuleCatalogServiceOptions): number {
   return options.now?.() ?? Date.now();
@@ -147,6 +152,39 @@ async function resolveGeoTreeSha(options: RuleCatalogServiceOptions): Promise<st
   return geo?.sha ?? null;
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+async function fetchGitHubDirectoryRuleNames(
+  type: RemoteRuleType,
+  options: RuleCatalogServiceOptions
+): Promise<string[]> {
+  const { owner, repo, ref } = RULE_PROVIDER_CONFIG.github;
+  const directory = `${RULE_PROVIDER_CONFIG.treePath}/${type}`;
+  const url = `https://github.com/${owner}/${repo}/tree/${ref}/${directory}`;
+  const fetchImpl = options.fetchImpl ?? globalThis.fetch;
+  const response = await fetchImpl(url, {
+    headers: {
+      Accept: "text/html,*/*",
+      "User-Agent": options.userAgent ?? DEFAULT_USER_AGENT,
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`GitHub directory ${type} returned ${response.status}`);
+  }
+
+  const prefix = `/${owner}/${repo}/blob/${ref}/${directory}/`;
+  const pattern = new RegExp(`${escapeRegExp(prefix)}([^"/?#]+)\\.mrs(?:[?#][^"]*)?`, "gi");
+  const names = new Set<string>();
+  for (const match of (await response.text()).matchAll(pattern)) {
+    const name = normalizeRuleName(match[1]);
+    if (name) names.add(name);
+  }
+  if (names.size === 0) throw new Error(`GitHub directory ${type} did not contain rule files`);
+  return Array.from(names).sort((left, right) => left.localeCompare(right));
+}
+
 export function extractRemoteRuleNames(tree: GitTreeEntry[], type: RemoteRuleType): string[] {
   const names = new Set<string>();
   for (const entry of tree) {
@@ -169,6 +207,10 @@ function isIndexFresh(index: RemoteRuleIndex, now: number): boolean {
 
 function withSource(index: RemoteRuleIndex, source: "remote" | "stale"): RemoteRuleIndex {
   return { ...index, source };
+}
+
+function freshIndex(index: RemoteRuleIndex): RemoteRuleIndex {
+  return withSource(index, index.source === "stale" ? "stale" : "remote");
 }
 
 function toRuleSet(index: RemoteRuleIndex, type: RemoteRuleType): Set<string> {
@@ -336,21 +378,83 @@ export function normalizeRuleSearchType(value: string | null | undefined): RuleS
 export function createRuleCatalogService(options: RuleCatalogServiceOptions = {}) {
   let cachedIndex: RemoteRuleIndex | null = null;
   let indexInflight: Promise<RemoteRuleIndex> | null = null;
+  let cacheHydrated = !options.indexCache;
+  let cacheHydrationInflight: Promise<void> | null = null;
   const discoveryCache = new Map<string, CnRuleCandidateDiscovery>();
   const discoveryInflight = new Map<string, Promise<CnRuleCandidateDiscovery>>();
 
+  async function hydrateCachedIndex(): Promise<void> {
+    if (cacheHydrated) return;
+    if (cacheHydrationInflight) return cacheHydrationInflight;
+
+    cacheHydrationInflight = options.indexCache!
+      .read()
+      .then((index) => {
+        if (index) cachedIndex = index;
+      })
+      .catch((error) => {
+        options.logger?.warn?.("Unable to read the persisted rule index", error);
+      })
+      .finally(() => {
+        cacheHydrated = true;
+        cacheHydrationInflight = null;
+      });
+
+    return cacheHydrationInflight;
+  }
+
+  async function persistCachedIndex(index: RemoteRuleIndex): Promise<void> {
+    if (!options.indexCache) return;
+    try {
+      await options.indexCache.write(index);
+    } catch (error) {
+      options.logger?.warn?.("Unable to persist the refreshed rule index", error);
+    }
+  }
+
+  async function markCachedIndexStale(): Promise<RemoteRuleIndex | null> {
+    if (!cachedIndex) return null;
+    const stale = withSource(
+      {
+        ...cachedIndex,
+        expiresAt: getNow(options) + Math.min(getCacheTtlMs(options), MAX_STALE_RETRY_TTL_MS),
+      },
+      "stale"
+    );
+    cachedIndex = stale;
+    await persistCachedIndex(stale);
+    return stale;
+  }
+
   async function fetchRemoteRuleIndex(): Promise<RemoteRuleIndex> {
-    const geoSha = await resolveGeoTreeSha(options);
-    const geoTree = geoSha
-      ? await fetchGitTree(geoSha, true, options)
-      : await fetchGitTree(RULE_PROVIDER_CONFIG.github.ref, true, options);
-    if (geoTree.truncated) {
-      throw new Error("GitHub tree response truncated; cannot build rule index reliably");
+    let geosite: string[];
+    let geoip: string[];
+    try {
+      const geoSha = await resolveGeoTreeSha(options);
+      const geoTree = geoSha
+        ? await fetchGitTree(geoSha, true, options)
+        : await fetchGitTree(RULE_PROVIDER_CONFIG.github.ref, true, options);
+      if (geoTree.truncated) {
+        throw new Error("GitHub tree response truncated; cannot build rule index reliably");
+      }
+      geosite = extractRemoteRuleNames(geoTree.tree, "geosite");
+      geoip = extractRemoteRuleNames(geoTree.tree, "geoip");
+    } catch (apiError) {
+      try {
+        [geosite, geoip] = await Promise.all([
+          fetchGitHubDirectoryRuleNames("geosite", options),
+          fetchGitHubDirectoryRuleNames("geoip", options),
+        ]);
+      } catch (directoryError) {
+        throw new Error(
+          `${errorMessage(apiError)}; GitHub directory fallback failed: ${errorMessage(directoryError)}`
+        );
+      }
     }
     const fetchedAt = getNow(options);
     return {
-      geosite: extractRemoteRuleNames(geoTree.tree, "geosite"),
-      geoip: extractRemoteRuleNames(geoTree.tree, "geoip"),
+      geosite,
+      geoip,
       fetchedAt,
       expiresAt: toExpiresAt(fetchedAt, options),
       source: "remote",
@@ -359,12 +463,13 @@ export function createRuleCatalogService(options: RuleCatalogServiceOptions = {}
 
   async function refreshIndex(force = false): Promise<RemoteRuleIndex> {
     const now = getNow(options);
-    if (!force && cachedIndex && isIndexFresh(cachedIndex, now)) return withSource(cachedIndex, "remote");
+    if (!force && cachedIndex && isIndexFresh(cachedIndex, now)) return freshIndex(cachedIndex);
     if (indexInflight) return indexInflight;
 
     indexInflight = fetchRemoteRuleIndex()
-      .then((index) => {
+      .then(async (index) => {
         cachedIndex = index;
+        await persistCachedIndex(index);
         return withSource(index, "remote");
       })
       .finally(() => {
@@ -375,24 +480,26 @@ export function createRuleCatalogService(options: RuleCatalogServiceOptions = {}
   }
 
   async function getRemoteRuleIndex(params: { force?: boolean; allowStale?: boolean; now?: number } = {}) {
+    await hydrateCachedIndex();
     const now = params.now ?? getNow(options);
-    if (!params.force && cachedIndex && isIndexFresh(cachedIndex, now)) return withSource(cachedIndex, "remote");
+    if (!params.force && cachedIndex && isIndexFresh(cachedIndex, now)) return freshIndex(cachedIndex);
 
     try {
       return await refreshIndex(params.force ?? false);
     } catch (error) {
       if (params.allowStale !== false && cachedIndex) {
         options.logger?.warn?.("Using stale rule index after refresh failed", error);
-        return withSource(cachedIndex, "stale");
+        return (await markCachedIndexStale())!;
       }
       throw new RuleIndexUnavailableError(error instanceof Error ? error.message : String(error));
     }
   }
 
   async function refreshRuleIndex(params: { force?: boolean } = {}): Promise<RuleIndexRefreshResult> {
+    await hydrateCachedIndex();
     const now = getNow(options);
     if (!params.force && cachedIndex && isIndexFresh(cachedIndex, now)) {
-      return { status: "skipped", index: withSource(cachedIndex, "remote"), diff: buildRuleCatalogDiff(cachedIndex) };
+      return { status: "skipped", index: freshIndex(cachedIndex), diff: buildRuleCatalogDiff(cachedIndex) };
     }
 
     try {
@@ -401,7 +508,7 @@ export function createRuleCatalogService(options: RuleCatalogServiceOptions = {}
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (cachedIndex) {
-        const stale = withSource(cachedIndex, "stale");
+        const stale = (await markCachedIndexStale())!;
         return { status: "stale", index: stale, diff: buildRuleCatalogDiff(stale), error: message };
       }
       return { status: "unavailable", error: message };
@@ -565,7 +672,7 @@ export function createRuleCatalogService(options: RuleCatalogServiceOptions = {}
 
   function getCachedRuleIndex(): RemoteRuleIndex | null {
     if (!cachedIndex) return null;
-    return withSource(cachedIndex, isIndexFresh(cachedIndex, getNow(options)) ? "remote" : "stale");
+    return isIndexFresh(cachedIndex, getNow(options)) ? freshIndex(cachedIndex) : withSource(cachedIndex, "stale");
   }
 
   return {

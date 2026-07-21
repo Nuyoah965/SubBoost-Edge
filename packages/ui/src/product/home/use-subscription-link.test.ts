@@ -181,6 +181,20 @@ describe("useSubscriptionLink", () => {
     });
   });
 
+  it("supports enabling automatic updates by default for new subscriptions", () => {
+    const adapter = makeAdapter({
+      defaultAutoUpdateEnabled: true,
+      autoUpdateIntervalPolicy: { defaultHours: 24, minHours: 1 },
+    });
+    let hook = useRenderedHook({ subscriptionAdapter: adapter });
+
+    hook.handleGenerateSubscription("quick");
+    hook = useRenderedHook({ subscriptionAdapter: adapter });
+
+    expect(hook.autoUpdateEnabled).toBe(true);
+    expect(hook.autoUpdateHours).toBe(24);
+  });
+
   it("opens the save requirement flow and continues after acceptance", async () => {
     const fetchUser = vi.fn(async () => undefined);
     const adapter = makeAdapter();
