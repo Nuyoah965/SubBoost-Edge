@@ -124,7 +124,7 @@ function createRuleTreeFetch(
   }) as unknown as typeof fetch;
 }
 
-describe("SubBoost Edge worker", () => {
+describe("EdgeSub worker", () => {
   it("redirects anonymous pages to login and serves assets after authentication", async () => {
     const env = createEnv(undefined, {
       ASSETS: {
@@ -140,6 +140,9 @@ describe("SubBoost Edge worker", () => {
 
     const loginPageResponse = await handleRequest(new Request("https://edge.test/login"), env);
     expect(loginPageResponse.status).toBe(200);
+
+    const logoResponse = await handleRequest(new Request("https://edge.test/edgesub-mark.svg"), env);
+    expect(logoResponse.status).toBe(200);
 
     const cookie = await login(env);
     const response = await handleRequest(authenticatedRequest("https://edge.test/", cookie), env);

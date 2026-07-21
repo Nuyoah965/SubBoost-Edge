@@ -474,7 +474,7 @@ export async function handleClash(
 
   try {
     const upstream = await fetch(converterUrl, {
-      headers: { "User-Agent": "SubBoost-Edge/2.6" },
+      headers: { "User-Agent": "EdgeSub/2.6" },
       cf: { cacheTtl: 300, cacheEverything: true },
     } as RequestInit);
     const headers = new Headers(upstream.headers);
@@ -515,7 +515,7 @@ export async function handleTest(request: Request): Promise<Response> {
         try {
           await fetch(targetUrl, {
             method: "GET",
-            headers: { "User-Agent": "SubBoost-Edge/2.6", Accept: "text/html,*/*" },
+            headers: { "User-Agent": "EdgeSub/2.6", Accept: "text/html,*/*" },
             signal: controller.signal,
             redirect: "manual",
           });

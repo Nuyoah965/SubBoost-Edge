@@ -107,7 +107,7 @@ function parseStoredSubscription(value: string): { record: StoredSubscription; m
   const raw = JSON.parse(value) as unknown;
   if (!isRecord(raw) || typeof raw.yaml !== "string" || !raw.yaml.trim()) return null;
 
-  const name = typeof raw.name === "string" && raw.name.trim() ? raw.name.trim().slice(0, 100) : "SubBoost Edge";
+  const name = typeof raw.name === "string" && raw.name.trim() ? raw.name.trim().slice(0, 100) : "EdgeSub";
   const createdAt = typeof raw.createdAt === "string" ? raw.createdAt : new Date().toISOString();
   if (raw.version !== 2) {
     return {
@@ -211,7 +211,7 @@ function buildRefreshCallbacks() {
         const fetched = await fetchRemoteText(source.content, {
           maxBytes: MAX_IMPORT_BYTES,
           timeoutMs: 15000,
-          userAgent: source.userinfoUserAgent || "SubBoost-Edge/2.6",
+          userAgent: source.userinfoUserAgent || "EdgeSub/2.6",
         });
         const parsed = parseSubscription(fetched.content);
         return {
@@ -235,7 +235,7 @@ function buildRefreshCallbacks() {
         const fetched = await fetchRemoteText(source.userinfoUrl || source.content, {
           maxBytes: 256 * 1024,
           timeoutMs: 8000,
-          userAgent: source.userinfoUserAgent || "SubBoost-Edge/2.6",
+          userAgent: source.userinfoUserAgent || "EdgeSub/2.6",
           method: "HEAD",
         });
         return fetched.headers;
@@ -364,7 +364,7 @@ export async function handleAuthMe(request: Request, env: WorkerEnv): Promise<Re
     user: {
       id: "edge-workspace",
       username: "edge",
-      name: "SubBoost Edge",
+      name: "EdgeSub",
       avatarUrl: null,
       trustLevel: 0,
       aiAssistantEnabled: false,
@@ -392,7 +392,7 @@ export function handleHealth(request: Request, env: WorkerEnv): Response {
   if (request.method !== "GET") return methodNotAllowed(["GET"]);
   return json({
     status: "ok",
-    service: "subboost-edge",
+    service: "edgesub",
     version: "2.6.0-edge.2",
     kv: Boolean(env.SUB_KV),
     auth: Boolean(env.EDGE_ADMIN_PASSWORD?.trim()),
@@ -412,7 +412,7 @@ export async function handleSourceImport(request: Request): Promise<Response> {
     const userAgent =
       typeof body?.userinfoUserAgent === "string" && body.userinfoUserAgent.trim()
         ? body.userinfoUserAgent.trim().slice(0, 200)
-        : "SubBoost-Edge/2.6";
+        : "EdgeSub/2.6";
     const source = await fetchRemoteText(url, {
       maxBytes: MAX_IMPORT_BYTES,
       timeoutMs: 15000,
@@ -449,7 +449,7 @@ function buildStoredSubscription(
   now: Date,
   existing?: StoredSubscription
 ): { record: StoredSubscription } | { response: Response } {
-  const name = typeof body.name === "string" ? body.name.trim().slice(0, 100) : "SubBoost Edge";
+  const name = typeof body.name === "string" ? body.name.trim().slice(0, 100) : "EdgeSub";
   const yaml = typeof body.yaml === "string" ? body.yaml : "";
   if (!yaml.trim()) return { response: json({ error: "请先生成配置" }, 400) };
   if (byteLength(yaml) > MAX_STORED_YAML_BYTES) {

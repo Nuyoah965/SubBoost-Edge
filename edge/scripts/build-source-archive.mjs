@@ -108,7 +108,7 @@ async function buildArchive() {
   const files = await collectSourceFiles();
   const manifest = Buffer.from(
     [
-      "SubBoost Edge complete corresponding source",
+      "EdgeSub complete corresponding source",
       "",
       "License: AGPL-3.0-only",
       "Upstream: https://github.com/SubBoost/subboost",

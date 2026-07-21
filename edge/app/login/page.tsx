@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Eye, EyeOff, KeyRound, LoaderCircle, LogIn, ShieldCheck } from "lucide-react";
+import Image from "next/image";
+import { Eye, EyeOff, KeyRound, LoaderCircle, LogIn } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@subboost/ui/components/ui/button";
 import { Input } from "@subboost/ui/components/ui/input";
@@ -52,26 +53,28 @@ function LoginForm() {
 
   return (
     <main className="mx-auto flex min-h-[calc(100vh-9rem)] w-full max-w-md items-center px-4 py-12 sm:px-6">
-      <section className="w-full overflow-hidden rounded-lg border border-white/10 bg-black/45 shadow-2xl shadow-black/30 backdrop-blur-xl">
-        <div className="h-1 bg-emerald-400" />
+      <section className="w-full overflow-hidden rounded-lg border border-[#d7e0de] bg-white shadow-[0_22px_55px_rgba(23,35,33,0.10)]">
+        <div className="flex h-1" aria-hidden="true">
+          <span className="flex-[3] bg-[#087f70]" />
+          <span className="flex-1 bg-[#dc654f]" />
+          <span className="flex-1 bg-[#315fcb]" />
+        </div>
         <div className="p-6 sm:p-8">
           <div className="mb-8 flex items-start gap-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-emerald-300/20 bg-emerald-400/10 text-emerald-300">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
+            <Image src="/edgesub-mark.svg" alt="EdgeSub" width={44} height={44} priority className="h-11 w-11 shrink-0" />
             <div className="min-w-0">
-              <h1 className="text-xl font-semibold text-white">管理员登录</h1>
-              <p className="mt-1 text-sm text-white/45">SubBoost Edge</p>
+              <h1 className="text-xl font-semibold text-[#172321]">管理员登录</h1>
+              <p className="mt-1 text-sm text-[#60706d]">EdgeSub 管理工作台</p>
             </div>
           </div>
 
           <form onSubmit={submit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="admin-password" className="text-sm text-white/70">
+              <Label htmlFor="admin-password" className="text-sm text-[#475754]">
                 管理密码
               </Label>
               <div className="relative">
-                <KeyRound className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" />
+                <KeyRound className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#71817e]" />
                 <Input
                   id="admin-password"
                   type={showPassword ? "text" : "password"}
@@ -85,7 +88,7 @@ function LoginForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((value) => !value)}
-                  className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-white/40 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70"
+                  className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-[#71817e] transition-colors hover:bg-[#edf3f1] hover:text-[#087f70] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#087f70]/40"
                   aria-label={showPassword ? "隐藏密码" : "显示密码"}
                   title={showPassword ? "隐藏密码" : "显示密码"}
                 >
@@ -95,7 +98,7 @@ function LoginForm() {
             </div>
 
             {error && (
-              <div role="alert" className="rounded-md border border-red-400/20 bg-red-400/10 px-3 py-2.5 text-sm text-red-200">
+              <div role="alert" className="rounded-md border border-[#e4aaa0] bg-[#fff3f0] px-3 py-2.5 text-sm text-[#a33c31]">
                 {error}
               </div>
             )}

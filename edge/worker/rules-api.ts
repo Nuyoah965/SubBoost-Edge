@@ -86,7 +86,7 @@ function getRuleCatalogService(env: WorkerEnv): RuleCatalogService | null {
   activeKv = kv;
   activeGitHubToken = githubToken;
   activeService = createRuleCatalogService({
-    userAgent: "SubBoost-Edge/2.6",
+    userAgent: "EdgeSub/2.6",
     getGitHubToken: () => githubToken,
     indexCache: {
       read: async () => {

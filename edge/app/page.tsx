@@ -6,6 +6,8 @@ import { readSourceImportResponse } from "@subboost/ui/product/client-response";
 import { useConfigStore } from "@subboost/ui/store/config-store";
 
 const edgeHomeAdapter: HomeSurfaceAdapter = {
+  brandName: "EdgeSub",
+  brandDescription: "在 Cloudflare Edge 上转换、保存并按计划更新 Clash 与 Mihomo 订阅",
   loginHref: "/login",
   loadSubscription: (id) => fetch(`/api/subscriptions/${encodeURIComponent(id)}`, { cache: "no-store" }),
   templateUploadHref: null,

@@ -300,4 +300,18 @@ describe("HomeLayout", () => {
     expect(html).toContain("dns is invalid");
     expect(mocks.yamlHighlight).toBeUndefined();
   });
+
+  it("renders adapter-provided product branding", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(HomeLayout, {
+        ...baseProps,
+        brandName: "EdgeSub",
+        brandDescription: "Edge subscription workspace",
+      })
+    );
+
+    expect(html).toContain("EdgeSub");
+    expect(html).toContain("Edge subscription workspace");
+    expect(html).not.toContain(">SubBoost<");
+  });
 });

@@ -1,6 +1,6 @@
-# SubBoost Edge
+# EdgeSub
 
-This workspace combines the SubBoost converter UI with the existing Cloudflare subscription Worker contracts.
+EdgeSub combines the SubBoost converter UI with Cloudflare subscription Worker contracts.
 
 ## Architecture
 

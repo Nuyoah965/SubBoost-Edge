@@ -30,6 +30,8 @@ type SaveRequirementDialogProps = {
 };
 
 export type HomeSurfaceAdapter = {
+  brandName?: string;
+  brandDescription?: string;
   productApi?: ProductApiAdapter;
   interactions?: ProductInteractionAdapter;
   subscription?: HomeSubscriptionAdapter;
@@ -197,6 +199,8 @@ function HomeSurfaceInner({ adapter }: Props) {
 
   return (
     <HomeLayout
+      brandName={adapter?.brandName}
+      brandDescription={adapter?.brandDescription}
       showAiColumn={showAiColumn}
       user={user}
       authChecked={authChecked}

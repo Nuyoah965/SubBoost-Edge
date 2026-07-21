@@ -1,10 +1,10 @@
 <!-- markdownlint-disable MD033 MD041 -->
 <div align="center">
-  <p><img src="docs/assets/logo.png" alt="SubBoost Edge" width="96"></p>
-  <h1>SubBoost Edge</h1>
+  <p><img src="edge/public/edgesub-mark.svg" alt="EdgeSub" width="96"></p>
+  <h1>EdgeSub</h1>
   <p>基于 SubBoost 的 Cloudflare Workers 边缘部署版</p>
   <p>
-    <a href="https://github.com/hackjsw/SubBoost-Edge"><img src="https://img.shields.io/badge/source-SubBoost--Edge-181717.svg" alt="Source repository"></a>
+    <a href="https://github.com/hackjsw/SubBoost-Edge"><img src="https://img.shields.io/badge/source-EdgeSub-087f70.svg" alt="Source repository"></a>
     <a href="https://github.com/SubBoost/subboost"><img src="https://img.shields.io/badge/upstream-SubBoost-blue.svg" alt="Upstream project"></a>
     <img src="https://img.shields.io/badge/runtime-Cloudflare%20Workers-F38020.svg" alt="Cloudflare Workers">
     <img src="https://img.shields.io/badge/license-AGPL--3.0--only-green.svg" alt="AGPL-3.0-only">
@@ -19,7 +19,7 @@
 
 ## 项目来源与致谢
 
-本项目是基于 [SubBoost](https://github.com/SubBoost/subboost) **v2.6.0** 开发的非官方修改版本，不是 SubBoost 上游团队发布的官方版本。仓库保留了上游 Git 历史，以便清楚追溯代码来源和后续同步。
+EdgeSub 是基于 [SubBoost](https://github.com/SubBoost/subboost) **v2.6.0** 开发的非官方修改版本，不是 SubBoost 上游团队发布的官方版本。仓库保留了上游 Git 历史，以便清楚追溯代码来源和后续同步。
 
 特别感谢原项目作者及主要维护者 [RyanVan（@Ryson-32）](https://github.com/Ryson-32)，感谢 [SubBoost 团队](https://github.com/SubBoost) 和所有 [项目贡献者](https://github.com/SubBoost/subboost/graphs/contributors) 持续完善订阅转换、节点解析、规则管理和可视化界面。没有他们的工作，就不会有这个 Edge 版本。
 
@@ -34,7 +34,7 @@
 
 ## 项目简介
 
-SubBoost Edge 将 SubBoost 的配置生成器和订阅管理能力部署到一个 Cloudflare Worker 中。Next.js 前端会静态导出并由 Workers Static Assets 提供，API、登录、KV 数据和定时任务则在同一个 Worker 内运行，因此不需要额外维护服务器或数据库。
+EdgeSub 将 SubBoost 的配置生成器和订阅管理能力部署到一个 Cloudflare Worker 中。Next.js 前端会静态导出并由 Workers Static Assets 提供，API、登录、KV 数据和定时任务则在同一个 Worker 内运行，因此不需要额外维护服务器或数据库。
 
 它不会提供代理节点或代理服务，只负责解析、转换、保存和更新用户自行提供的订阅内容。
 
@@ -122,7 +122,7 @@ npm run edge:deploy
 
 | 路径 | 说明 |
 | --- | --- |
-| `/` | SubBoost 配置生成器 |
+| `/` | EdgeSub 配置生成器 |
 | `/login` | 管理员登录 |
 | `/dashboard` | KV 订阅记录管理 |
 | `/api/subscriptions` | 已保存订阅的管理接口 |
@@ -156,7 +156,7 @@ git fetch upstream
 
 ## 开源许可
 
-SubBoost Edge 及其上游代码按照 [GNU Affero General Public License v3.0 only](./LICENSE) 发布。
+EdgeSub 及其上游代码按照 [GNU Affero General Public License v3.0 only](./LICENSE) 发布。
 
 如果修改本项目并通过网络向用户提供服务，AGPL-3.0 要求向这些用户提供部署版本对应的完整源码。本项目在页面导航中提供源码入口，并在构建时生成当前版本的源码归档。
 

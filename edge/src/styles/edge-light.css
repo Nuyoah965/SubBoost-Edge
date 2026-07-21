@@ -1,0 +1,189 @@
+:root.edgesub-light {
+  color-scheme: light;
+  --background: #f4f7f7;
+  --foreground: #172321;
+  --card: #ffffff;
+  --card-hover: #f8faf9;
+  --border: #d7e0de;
+  --muted: #60706d;
+
+  /* The shared SubBoost UI uses white as its dark-theme ink token. */
+  --color-white: #172321;
+  --color-primary-50: #edf9f7;
+  --color-primary-100: #d2f1eb;
+  --color-primary-200: #a9e1d7;
+  --color-primary-300: #74cabc;
+  --color-primary-400: #38aa9a;
+  --color-primary-500: #087f70;
+  --color-primary-600: #05665b;
+  --color-primary-700: #075249;
+  --color-primary-800: #08423c;
+  --color-primary-900: #073732;
+  --color-indigo-50: #edf9f7;
+  --color-indigo-100: #d2f1eb;
+  --color-indigo-200: #a9e1d7;
+  --color-indigo-300: #74cabc;
+  --color-indigo-400: #168d7e;
+  --color-indigo-500: #087f70;
+  --color-indigo-600: #05665b;
+  --color-indigo-700: #075249;
+  --color-indigo-800: #08423c;
+  --color-indigo-900: #073732;
+}
+
+html.edgesub-light body {
+  background: #f4f7f7;
+  color: #172321;
+}
+
+@layer base {
+  html.edgesub-light * {
+    border-color: #d7e0de;
+  }
+}
+
+.edgesub-light .bg-gradient-radial {
+  background: #f4f7f7;
+}
+
+.edgesub-light .bg-\[\#141414\],
+.edgesub-light .bg-\[\#1a1a1a\],
+.edgesub-light .glass-card,
+.edgesub-light .glass-card-hover {
+  background-color: #ffffff !important;
+  border-color: #d7e0de !important;
+  box-shadow: 0 12px 32px rgb(23 35 33 / 7%);
+}
+
+.edgesub-light .bg-black\/95,
+.edgesub-light .bg-black\/90 {
+  background-color: rgb(255 255 255 / 98%) !important;
+  color: #172321 !important;
+}
+
+.edgesub-light .bg-black\/30,
+.edgesub-light .bg-black\/10 {
+  background-color: #edf3f1 !important;
+}
+
+.edgesub-light .bg-white {
+  background-color: #ffffff !important;
+}
+
+.edgesub-light .bg-white\/95 {
+  background-color: rgb(255 255 255 / 95%) !important;
+}
+
+.edgesub-light .rounded-2xl,
+.edgesub-light .rounded-xl {
+  border-radius: 0.5rem;
+}
+
+.edgesub-light button.bg-primary-500\/20,
+.edgesub-light a.bg-primary-500\/20,
+.edgesub-light .btn-primary {
+  background-color: #087f70 !important;
+  border-color: #087f70 !important;
+  color: #ffffff !important;
+  box-shadow: 0 5px 14px rgb(8 127 112 / 16%);
+}
+
+.edgesub-light button.bg-primary-500\/20:hover,
+.edgesub-light a.bg-primary-500\/20:hover,
+.edgesub-light .btn-primary:hover {
+  background-color: #05665b !important;
+  border-color: #05665b !important;
+}
+
+.edgesub-light .text-indigo-100,
+.edgesub-light .text-indigo-100\/90,
+.edgesub-light .text-indigo-200,
+.edgesub-light .text-indigo-300,
+.edgesub-light .text-indigo-300\/75,
+.edgesub-light .text-primary-200,
+.edgesub-light .text-primary-300 {
+  color: #05665b !important;
+}
+
+.edgesub-light .text-emerald-100,
+.edgesub-light .text-emerald-100\/90,
+.edgesub-light .text-emerald-200,
+.edgesub-light .text-emerald-300 {
+  color: #08745f !important;
+}
+
+.edgesub-light .text-amber-100,
+.edgesub-light .text-amber-100\/80,
+.edgesub-light .text-amber-100\/90,
+.edgesub-light .text-amber-200,
+.edgesub-light .text-amber-200\/70,
+.edgesub-light .text-amber-200\/80,
+.edgesub-light .text-amber-300 {
+  color: #8a4b08 !important;
+}
+
+.edgesub-light .text-red-200,
+.edgesub-light .text-red-200\/70,
+.edgesub-light .text-red-300,
+.edgesub-light .text-red-300\/70,
+.edgesub-light .text-red-400,
+.edgesub-light .text-rose-100,
+.edgesub-light .text-rose-100\/90,
+.edgesub-light .text-rose-200,
+.edgesub-light .text-rose-300,
+.edgesub-light .text-rose-400 {
+  color: #b54236 !important;
+}
+
+.edgesub-light .text-sky-100\/80,
+.edgesub-light .text-sky-300,
+.edgesub-light .text-sky-400,
+.edgesub-light .text-slate-200 {
+  color: #315fcb !important;
+}
+
+.edgesub-light [class~="hover:bg-white/5"]:hover,
+.edgesub-light [class~="hover:bg-white/10"]:hover,
+.edgesub-light [class~="focus:bg-white/10"]:focus {
+  background-color: #e7efed !important;
+}
+
+.edgesub-light [class~="hover:text-white"]:hover,
+.edgesub-light [class~="focus:text-white"]:focus {
+  color: #087f70 !important;
+}
+
+.edgesub-light [class~="data-[state=active]:bg-white/10"][data-state="active"],
+.edgesub-light [class~="data-[state=checked]:bg-white/10"][data-state="checked"] {
+  background-color: #ffffff !important;
+  color: #05665b !important;
+  box-shadow: 0 1px 5px rgb(23 35 33 / 10%);
+}
+
+.edgesub-light input,
+.edgesub-light textarea,
+.edgesub-light select {
+  color-scheme: light;
+  caret-color: #087f70;
+}
+
+.edgesub-light input[type="date"] {
+  -webkit-text-fill-color: #172321 !important;
+}
+
+.edgesub-light .ring-offset-black {
+  --tw-ring-offset-color: #ffffff;
+}
+
+.edgesub-light ::selection {
+  background: rgb(8 127 112 / 18%);
+  color: #172321;
+}
+
+.edgesub-light .custom-scrollbar {
+  scrollbar-color: rgb(8 127 112 / 35%) transparent;
+}
+
+.edgesub-light .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgb(8 127 112 / 35%);
+}

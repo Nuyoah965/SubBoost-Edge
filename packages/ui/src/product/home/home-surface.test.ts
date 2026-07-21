@@ -178,6 +178,8 @@ describe("HomeSurface", () => {
     const productApi = { sourceImport: { importSource: vi.fn() } };
     const interactions = { sourceAdded: vi.fn() };
     const adapter = {
+      brandName: "EdgeSub",
+      brandDescription: "Edge subscription workspace",
       productApi,
       interactions,
       subscription: { loginHref: "/login" },
@@ -215,6 +217,8 @@ describe("HomeSurface", () => {
       loadSubscription: mocks.loadSubscription,
     });
     expect(mocks.captures.homeLayout).toMatchObject({
+      brandName: "EdgeSub",
+      brandDescription: "Edge subscription workspace",
       showAiColumn: true,
       editSubscriptionId: "sub-1",
       hasValidSources: true,

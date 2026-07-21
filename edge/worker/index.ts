@@ -34,6 +34,7 @@ function isPublicAsset(pathname: string): boolean {
     pathname.startsWith("/login.") ||
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/__next") ||
+    pathname === "/edgesub-mark.svg" ||
     pathname === "/logo.png" ||
     pathname === "/favicon.ico" ||
     pathname === "/404.html" ||
@@ -118,9 +119,9 @@ const worker = {
   scheduled(controller: ScheduledControllerLike, env: WorkerEnv, ctx: ExecutionContextLike) {
     if (controller.cron === RULE_CATALOG_CRON) {
       const run = runScheduledRuleCatalogUpdate(env)
-        .then((summary) => console.info("[subboost-edge-rules-cron] completed", summary))
+        .then((summary) => console.info("[edgesub-rules-cron] completed", summary))
         .catch((error) => {
-          console.error("[subboost-edge-rules-cron] failed", {
+          console.error("[edgesub-rules-cron] failed", {
             message: error instanceof Error ? error.message : "unknown error",
           });
         });
@@ -129,9 +130,9 @@ const worker = {
     }
 
     const run = runScheduledSubscriptionUpdates(env, new Date(controller.scheduledTime))
-      .then((summary) => console.info("[subboost-edge-cron] completed", summary))
+      .then((summary) => console.info("[edgesub-cron] completed", summary))
       .catch((error) => {
-        console.error("[subboost-edge-cron] failed", {
+        console.error("[edgesub-cron] failed", {
           message: error instanceof Error ? error.message : "unknown error",
         });
       });
