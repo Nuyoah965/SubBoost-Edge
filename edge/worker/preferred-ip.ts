@@ -6,7 +6,6 @@ const PREFERRED_IP_URLS = [
   "https://cf.090227.xyz/cu",
   "https://cf.090227.xyz/cmcc?ips=8",
 ];
-const PREFERRED_IP_CACHE_SECONDS = 5 * 24 * 60 * 60;
 
 function preferredServerPattern(): RegExp {
   return /(\bserver:\s*)(["']?)[a-z0-9-]+\.cf\.090227\.xyz\2(?![a-z0-9.-])/gi;
@@ -74,11 +73,18 @@ async function fetchPreferredIps(): Promise<string[]> {
 }
 
 async function fetchPreferredIpSource(url: string): Promise<string[]> {
-  const response = await fetch(url, {
-    headers: { Accept: "text/plain" },
+  const requestUrl = new URL(url);
+  requestUrl.searchParams.set("_refresh", Date.now().toString());
+
+  const response = await fetch(requestUrl, {
+    headers: {
+      Accept: "text/plain",
+      "Cache-Control": "no-cache",
+    },
+    cache: "no-store",
     cf: {
-      cacheEverything: true,
-      cacheTtl: PREFERRED_IP_CACHE_SECONDS,
+      cacheEverything: false,
+      cacheTtl: 0,
     },
   } as RequestInit);
 
