@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/wrangler/config-schema.json",
-  "name": "test",
+  "name": "subboost-edge",
   "main": "worker/index.ts",
   "compatibility_date": "2026-02-07",
   "assets": {
