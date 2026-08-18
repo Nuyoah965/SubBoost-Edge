@@ -13,7 +13,13 @@
   "kv_namespaces": [
     {
       "binding": "SUB_KV",
-      "id": "58db6bee88a44a19a9457a465d6eb693"
+      "id": "4b48072ae0224ebba8c907727ec098e7"
+    }
+  ],
+  "routes": [
+    {
+      "pattern": "sub.gggggg.ccwu.cc",
+      "custom_domain": true
     }
   ],
   "triggers": {
