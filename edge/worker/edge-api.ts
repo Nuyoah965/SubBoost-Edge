@@ -19,6 +19,7 @@ import {
 import { byteLength } from "./encoding";
 import { json, methodNotAllowed, readJsonBody } from "./http";
 import { fetchRemoteText } from "./remote-fetch";
+import { applyPreferredIpsToYaml } from "./preferred-ip";
 import type { ExecutionContextLike, WorkerEnv } from "./types";
 
 const CONFIG_KEY_PREFIX = "edge-config:";
@@ -707,7 +708,12 @@ export async function handleStoredConfig(
     headers.set("X-SubBoost-Last-Updated", record.updatedAt);
     if (record.nextUpdateAt) headers.set("X-SubBoost-Next-Update", record.nextUpdateAt);
 
-    return new Response(request.method === "HEAD" ? null : record.yaml, {
+    const yaml =
+      request.method === "HEAD"
+        ? null
+        : await applyPreferredIpsToYaml(record.yaml);
+
+    return new Response(yaml, {
       headers,
     });
   } catch {

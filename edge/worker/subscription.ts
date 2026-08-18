@@ -13,6 +13,7 @@ import {
 import { byteLength, safeBase64Decode, utf8ToBase64 } from "./encoding";
 import { json, methodNotAllowed, readJsonBody } from "./http";
 import { assertPublicHttpUrl, fetchRemoteText } from "./remote-fetch";
+import { applyPreferredIpsToYaml } from "./preferred-ip";
 import type { EdgeNode, ExecutionContextLike, SubRequestParams, WorkerEnv } from "./types";
 
 type ExtractedNode = {
@@ -477,12 +478,18 @@ export async function handleClash(
       headers: { "User-Agent": "EdgeSub/2.6" },
       cf: { cacheTtl: 300, cacheEverything: true },
     } as RequestInit);
+    const upstreamBody = await upstream.text();
+    const body = upstream.ok
+      ? await applyPreferredIpsToYaml(upstreamBody)
+      : upstreamBody;
+
     const headers = new Headers(upstream.headers);
+    headers.delete("content-encoding");
     headers.delete("content-length");
     headers.set("Content-Type", "text/yaml;charset=UTF-8");
     headers.set("X-Content-Type-Options", "nosniff");
     headers.set("Content-Disposition", `attachment; filename=clash-${crypto.randomUUID().slice(0, 8)}.yaml`);
-    return new Response(upstream.body, { status: upstream.status, headers });
+    return new Response(body, { status: upstream.status, headers });
   } catch (error) {
     return new Response(`Error: subconverter failed: ${error instanceof Error ? error.message : String(error)}`, {
       status: 502,
